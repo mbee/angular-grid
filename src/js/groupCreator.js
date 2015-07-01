@@ -29,39 +29,49 @@ GroupCreator.prototype.group = function(rowNodes, groupedCols, groupAggFunction,
             groupByField = groupedCols[currentLevel].colDef.field;
             groupKey = data[groupByField];
 
-            if (currentLevel == 0) {
-                currentGroup = topMostGroup;
-            }
+            // undefined group key should not be added as a new group
+            if (groupKey) {
 
-            // if group doesn't exist yet, create it
-            nextGroup = currentGroup.childrenMap[groupKey];
-            if (!nextGroup) {
-                nextGroup = {
-                    group: true,
-                    field: groupByField,
-                    id: index--,
-                    key: groupKey,
-                    expanded: this.isExpanded(expandByDefault, currentLevel),
-                    children: [],
-                    // for top most level, parent is null
-                    parent: currentGroup === topMostGroup ? null : currentGroup,
-                    allChildrenCount: 0,
-                    level: currentGroup.level + 1,
-                    childrenMap: {} //this is a temporary map, we remove at the end of this method
-                };
-                currentGroup.childrenMap[groupKey] = nextGroup;
-                currentGroup.children.push(nextGroup);
-                allGroups.push(nextGroup);
-            }
+              if (currentLevel == 0) {
+                  currentGroup = topMostGroup;
+              }
+  
+              // if group doesn't exist yet, create it
+              nextGroup = currentGroup.childrenMap[groupKey];
+              if (!nextGroup) {
+                  nextGroup = {
+                      group: true,
+                      field: groupByField,
+                      id: index--,
+                      key: groupKey,
+                      expanded: this.isExpanded(expandByDefault, currentLevel),
+                      children: [],
+                      // for top most level, parent is null
+                      parent: currentGroup === topMostGroup ? null : currentGroup,
+                      allChildrenCount: 0,
+                      level: currentGroup.level + 1,
+                      childrenMap: {} //this is a temporary map, we remove at the end of this method
+                  };
+                  currentGroup.childrenMap[groupKey] = nextGroup;
+                  currentGroup.children.push(nextGroup);
+                  allGroups.push(nextGroup);
+              }
+  
+              nextGroup.allChildrenCount++;
 
-            nextGroup.allChildrenCount++;
-
-            if (currentLevel == levelToInsertChild) {
+              if (currentLevel == levelToInsertChild) {
                 node.parent = nextGroup === topMostGroup ? null : nextGroup;
                 nextGroup.children.push(node);
+              } else {
+                  currentGroup = nextGroup;
+              }
+
             } else {
-                currentGroup = nextGroup;
+              node.parent = nextGroup === topMostGroup ? null : nextGroup;
+              nextGroup.children.push(node);
+              break;
             }
+            
         }
 
     }
